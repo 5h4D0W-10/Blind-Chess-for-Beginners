@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Blind Chess - Offline two-player mental chess game over local Wi-Fi / hotspot.">
+  <meta name="theme-color" content="#0c1017">
+  <title>♞ Blind Chess | Offline LAN</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app" class="app-layout">
+    
+    <!-- Top Global Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-logo">
+          <span class="logo-glyph">♞</span>
+          <div class="logo-text">
+            <span class="title">Blind Chess</span>
+            <span class="subtitle">Mental Grandmaster &bull; Offline LAN</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <div id="connection-pill" class="connection-pill online">
+          <span class="dot"></span>
+          <span id="connection-status-text">Ready</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button id="btn-lan-info" class="btn-icon-text" title="View LAN Hotspot Addresses">
+          <span class="icon">📡</span>
+          <span class="btn-text">Hotspot URLs</span>
+        </button>
+        <button id="btn-open-history" class="btn-icon-text" title="Game History & Replay">
+          <span class="icon">📜</span>
+          <span class="btn-text">History</span>
+        </button>
+        <button id="btn-toggle-sound" class="btn-icon" title="Toggle Sound">
+          <span id="sound-icon">🔊</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN VIEW AREA -->
+    <main class="main-content">
+      
+      <!-- ================= 1. LOBBY SCREEN ================= -->
+      <section id="screen-lobby" class="screen active">
+        <div class="lobby-card glass-panel">
+          
+          <div class="lobby-hero">
+            <div class="hero-badge">OFFLINE WI-FI &bull; HOTSPOT MULTIPLAYER</div>
+            <h2>Grandmaster Vision Required</h2>
+            <p>
+              The board begins <strong>completely empty</strong>. Track every piece, square, and diagonal in your head.
+              Use your limited <strong>Tactical Reveals</strong> wisely to flash the real position for 2 seconds.
+            </p>
+          </div>
+
+          <div class="lobby-form">
+            <div class="input-group">
+              <label for="player-name-input">Your Call-Sign / Name</label>
+              <input type="text" id="player-name-input" maxlength="20" placeholder="e.g. Kasparov" autofocus>
+            </div>
+
+            <!-- Join / Create Split Grid -->
+            <div class="lobby-grid">
+              
+              <!-- Create Game Column -->
+              <div class="lobby-box">
+                <div class="box-header">
+                  <span class="box-icon">👑</span>
+                  <h3>Host Match (White)</h3>
+                </div>
+                <p class="box-desc">Generate a 4-letter room code and host the match. You play White.</p>
+                
+                <div class="reveal-selector-group">
+                  <label for="reveal-count-select">Tactical Reveals Per Player:</label>
+                  <div class="reveal-preset-pills" id="reveal-presets">
+                    <button type="button" class="pill-btn" data-reveals="3">3</button>
+                    <button type="button" class="pill-btn" data-reveals="5">5</button>
+                    <button type="button" class="pill-btn active" data-reveals="7">7</button>
+                    <button type="button" class="pill-btn" data-reveals="10">10</button>
+                    <button type="button" class="pill-btn" data-reveals="15">15</button>
+                  </div>
+                  <input type="hidden" id="reveal-count-input" value="7">
+                </div>
+
+                <button id="btn-create-room" class="btn-primary btn-block">
+                  <span class="btn-glow"></span>
+                  Create Match
+                </button>
+              </div>
+
+              <!-- Join Game Column -->
+              <div class="lobby-box">
+                <div class="box-header">
+                  <span class="box-icon">⚔️</span>
+                  <h3>Join Match (Black)</h3>
+                </div>
+                <p class="box-desc">Enter the 4-letter room code from the host PC. You play Black.</p>
+
+                <div class="input-group">
+                  <label for="join-room-code-input">4-Letter Room Code</label>
+                  <input type="text" id="join-room-code-input" class="room-code-input" maxlength="4" placeholder="e.g. XK9Q" autocomplete="off" spellcheck="false">
+                </div>
+
+                <button id="btn-join-room" class="btn-secondary btn-block">
+                  Join Match
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Waiting for Opponent Overlay / Card (Shown after hosting) -->
+          <div id="lobby-waiting-state" class="lobby-waiting-card hidden">
+            <div class="pulse-ring-container">
+              <div class="pulse-ring"></div>
+              <div class="pulse-ring delayed"></div>
+              <span class="pulse-icon">⏳</span>
+            </div>
+            
+            <h3>Room Created &bull; Waiting for Opponent</h3>
+            <p>Share this 4-letter code with Player 2 on your Hotspot:</p>
+            
+            <div class="room-code-badge-container">
+              <span id="created-room-code-display" class="room-code-big">----</span>
+              <button id="btn-copy-room-code" class="btn-small btn-gold" title="Copy Room Code">Copy Code</button>
+            </div>
+
+            <!-- LAN Share Links Card -->
+            <div class="lan-share-card">
+              <div class="share-title">🔗 Second PC Browser URL:</div>
+              <div id="lan-urls-container" class="lan-urls-list">
+                <!-- Dynamically populated -->
+              </div>
+              <div class="share-tip">Tip: Player 2 can open any of these URLs in Chrome or Edge on the same Wi-Fi hotspot.</div>
+            </div>
+
+            <button id="btn-cancel-create" class="btn-link">Cancel & Return</button>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ================= 2. GAME SCREEN ================= -->
+      <section id="screen-game" class="screen hidden">
+        
+        <!-- Opponent Status Top Bar -->
+        <div class="player-bar opponent-bar glass-panel">
+          <div class="player-profile">
+            <div class="player-avatar" id="opponent-avatar">♚</div>
+            <div class="player-meta">
+              <div class="player-name-row">
+                <span id="opponent-name-display" class="player-name">Opponent</span>
+                <span id="opponent-color-badge" class="badge badge-black">Black</span>
+              </div>
+              <div class="player-status-row">
+                <span id="opponent-turn-indicator" class="turn-pill">Waiting...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="player-reveals">
+            <span class="reveals-label">Tactical Reveals:</span>
+            <span id="opponent-reveals-badge" class="reveals-badge" title="Opponent's remaining reveals">
+              👁 <strong id="opponent-reveals-count">7</strong> left
+            </span>
+          </div>
+        </div>
+
+        <!-- Disconnect Alert Banner -->
+        <div id="disconnect-alert-banner" class="disconnect-banner hidden">
+          <span class="banner-icon">⚠️</span>
+          <span id="disconnect-banner-text">Opponent disconnected! Reconnection window: <strong>60s</strong></span>
+        </div>
+
+        <!-- Check Alert Toast -->
+        <div id="check-alert-toast" class="check-toast hidden">
+          ⚠️ CHECK!
+        </div>
+
+        <!-- Main Chess Arena (Board & Sidepanel) -->
+        <div class="game-arena">
+          
+          <!-- Board Column -->
+          <div class="board-container-wrapper">
+
+            <div id="chess-board-outer" class="chess-board-outer">
+              
+              <!-- Untimed Reveal Active Banner (visible to both players until move made) -->
+              <div id="active-reveal-banner" class="active-reveal-banner hidden">
+                <span class="reveal-pulse-dot"></span>
+                <span id="active-reveal-text">Tactical Reveal Active: Board visible to both players until move is played!</span>
+              </div>
+
+              <!-- Opponent Last Move Visual Banner -->
+              <div id="last-move-banner" class="last-move-banner hidden">
+                <span class="blip-indicator-dot"></span>
+                <span id="last-move-desc">Opponent: e2 &rarr; e4 (e4)</span>
+              </div>
+
+              <!-- 8x8 Board Container -->
+              <div id="chess-board" class="chess-board">
+                <!-- 64 Squares injected by JavaScript -->
+              </div>
+
+              <!-- Floating Move Error Shake Notification -->
+              <div id="move-error-toast" class="error-toast hidden">
+                <span id="move-error-text">Illegal move!</span>
+              </div>
+
+            </div>
+
+            <!-- Vision Legend for Blind Mode Dots -->
+            <div class="board-vision-legend">
+              <span class="legend-item"><span class="legend-dot white-dot"></span> White Piece</span>
+              <span class="legend-sep">&bull;</span>
+              <span class="legend-item"><span class="legend-dot black-dot"></span> Black Piece</span>
+              <span class="legend-sep">&bull;</span>
+              <span class="legend-item"><span class="legend-icon">👁</span> Tactical Reveal</span>
+            </div>
+          </div>
+
+          <!-- Controls & Move History Sidebar -->
+          <aside class="game-sidebar glass-panel">
+            
+            <!-- Turn & Reveal Header Card -->
+            <div class="sidebar-top-card">
+              <div class="turn-status-row">
+                <span class="turn-title">CURRENT TURN</span>
+                <div id="current-turn-banner" class="turn-banner white-turn">
+                  White's Turn
+                </div>
+              </div>
+
+              <!-- Reveal Action Button -->
+              <button id="btn-trigger-reveal" class="btn-reveal" title="Reveal board to both players until you make your move">
+                <span class="reveal-btn-left">
+                  <span class="reveal-icon">👁</span>
+                  <span id="reveal-btn-text" class="reveal-text">REVEAL POSITION</span>
+                </span>
+                <span id="my-reveals-badge" class="my-reveals-pill">7 left</span>
+              </button>
+            </div>
+
+            <!-- Algebraic Text Input Box -->
+            <div class="sidebar-section notation-input-section">
+              <form id="algebraic-move-form" class="notation-form" onsubmit="return false;">
+                <input 
+                  type="text" 
+                  id="algebraic-move-input" 
+                  placeholder="Play move (e.g. e4, Nf3)..." 
+                  autocomplete="off" 
+                  spellcheck="false"
+                  title="Click squares on board or type SAN here"
+                >
+                <button type="submit" id="btn-submit-move" class="btn-gold-small">Play</button>
+              </form>
+              <div class="input-hint">Click squares or enter SAN above</div>
+            </div>
+
+            <!-- Move History (Flex auto-scrolls to fit any screen height) -->
+            <div class="sidebar-section move-history-section">
+              <div class="move-history-header">
+                <span>Move History</span>
+                <span class="move-count-badge" id="move-count-badge">0 moves</span>
+              </div>
+
+              <div id="move-history-container" class="move-history-container">
+                <table class="move-history-table">
+                  <thead>
+                    <tr>
+                      <th class="col-num">#</th>
+                      <th class="col-white">White</th>
+                      <th class="col-black">Black</th>
+                    </tr>
+                  </thead>
+                  <tbody id="move-history-tbody">
+                    <!-- Moves inserted dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Resign & Game Actions (Cleanly anchored at the bottom) -->
+            <div class="sidebar-bottom-actions">
+              <button id="btn-resign-game" class="btn-danger-outline btn-block">
+                ⚐ Resign Game
+              </button>
+            </div>
+
+          </aside>
+
+        </div>
+
+        <!-- My Status Bottom Bar -->
+        <div class="player-bar my-bar glass-panel">
+          <div class="player-profile">
+            <div class="player-avatar" id="my-avatar">♔</div>
+            <div class="player-meta">
+              <div class="player-name-row">
+                <span id="my-name-display" class="player-name">You</span>
+                <span id="my-color-badge" class="badge badge-white">White</span>
+                <span class="badge badge-you">YOU</span>
+              </div>
+              <div class="player-status-row">
+                <span id="my-turn-indicator" class="turn-pill active">Your Turn</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="room-meta-pill">
+            <span>Room: <strong id="game-room-code-display">----</strong></span>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- ================= GAME OVER DRAMATIC MODAL ================= -->
+    <div id="modal-game-over" class="modal-overlay hidden">
+      <div class="modal-card dramatic-reveal-card glass-panel">
+        
+        <div class="modal-icon-crown">🏆</div>
+        <h2 id="game-over-title" class="game-over-title">White Wins by Checkmate!</h2>
+        <p id="game-over-details" class="game-over-details">An incredible display of mental mastery.</p>
+
+        <div class="game-over-stats">
+          <div class="stat-box">
+            <div class="stat-label">White Reveals Used</div>
+            <div id="stat-white-reveals" class="stat-value">0</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Black Reveals Used</div>
+            <div id="stat-black-reveals" class="stat-value">0</div>
+          </div>
+        </div>
+
+        <div class="reveal-note-banner">
+          ✨ The full real board position has been dramatically revealed behind this window!
+        </div>
+
+        <div class="modal-actions-row">
+          <button id="btn-request-rematch" class="btn-primary">
+            <span class="btn-glow"></span>
+            🔄 Rematch (Swap Colors)
+          </button>
+          <button id="btn-back-to-lobby" class="btn-secondary">
+            🏠 Back to Lobby
+          </button>
+        </div>
+
+        <div id="rematch-waiting-note" class="rematch-note hidden">
+          Waiting for opponent to accept rematch...
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ================= MATCH HISTORY & REPLAY MODAL ================= -->
+    <div id="modal-history" class="modal-overlay hidden">
+      <div class="modal-card history-modal-card glass-panel">
+        
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-icon">📜</span>
+            <h3>Saved Matches & Replay Analysis</h3>
+          </div>
+          <button id="btn-close-history" class="btn-close" title="Close">&times;</button>
+        </div>
+
+        <!-- History Match List Subview -->
+        <div id="history-list-view" class="history-view-content">
+          <p class="history-sub">Showing last 20 recorded matches from SQLite database:</p>
+          
+          <div class="table-responsive">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Room</th>
+                  <th>White</th>
+                  <th>Black</th>
+                  <th>Result</th>
+                  <th>Reveals (W/B)</th>
+                  <th>Replay</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-tbody">
+                <!-- Dynamically loaded -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Replay Viewer Subview (Interactive Board) -->
+        <div id="history-replay-view" class="history-view-content hidden">
+          <div class="replay-layout">
+            
+            <div class="replay-board-wrapper">
+              <div id="replay-board" class="chess-board replay-board">
+                <!-- Replay 64 squares -->
+              </div>
+            </div>
+
+            <div class="replay-controls-panel">
+              <div class="replay-meta">
+                <h4 id="replay-match-title">White vs Black</h4>
+                <div id="replay-result-badge" class="badge">1-0</div>
+                <div id="replay-step-info" class="replay-step">Move 0 / 0</div>
+              </div>
+
+              <!-- Replay Stepping Buttons -->
+              <div class="replay-buttons-row">
+                <button id="btn-replay-first" class="btn-replay-nav" title="First Move">⏮</button>
+                <button id="btn-replay-prev" class="btn-replay-nav" title="Previous Move (Left Arrow)">◀</button>
+                <button id="btn-replay-next" class="btn-replay-nav" title="Next Move (Right Arrow)">▶</button>
+                <button id="btn-replay-last" class="btn-replay-nav" title="Last Move">⏭</button>
+              </div>
+
+              <!-- Interactive Move List for Replay -->
+              <div id="replay-moves-list" class="replay-moves-list">
+                <!-- Moves injected -->
+              </div>
+
+              <button id="btn-replay-back-to-list" class="btn-secondary btn-block">
+                &larr; Back to Games List
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ================= LAN HOTSPOT INFO MODAL ================= -->
+    <div id="modal-lan-info" class="modal-overlay hidden">
+      <div class="modal-card lan-modal-card glass-panel">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-icon">📡</span>
+            <h3>Windows Wi-Fi Hotspot LAN URLs</h3>
+          </div>
+          <button id="btn-close-lan" class="btn-close">&times;</button>
+        </div>
+
+        <div class="lan-modal-body">
+          <p>
+            To play two PCs on the same Wi-Fi Hotspot with <strong>NO internet connection</strong>:
+          </p>
+
+          <ol class="lan-setup-steps">
+            <li>On Host PC, open <strong>Settings &rarr; Network &amp; Internet &rarr; Mobile hotspot</strong> and turn it ON.</li>
+            <li>Connect Player 2's PC to that hotspot Wi-Fi.</li>
+            <li>Player 2 opens one of the addresses below in their browser:</li>
+          </ol>
+
+          <div id="lan-modal-urls-list" class="lan-urls-list">
+            <!-- Populated via API -->
+          </div>
+
+          <div class="firewall-tip-box">
+            <strong>🛡️ Windows Firewall Notice:</strong>
+            When you first run Node.js, ensure you check <em>"Private networks"</em> when prompted by Windows Defender Firewall so the second PC can connect.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Load dependencies (Zero CDN: served statically from server) -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

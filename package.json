@@ -1,0 +1,25 @@
+{
+  "name": "blind-chess",
+  "version": "1.0.0",
+  "description": "Two-player offline LAN Blind Chess game for Windows PCs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "chess",
+    "blind-chess",
+    "lan",
+    "offline",
+    "socket.io",
+    "express"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^11.8.1",
+    "chess.js": "^1.4.0",
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
