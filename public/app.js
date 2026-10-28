@@ -650,7 +650,7 @@ function setupSocket() {
     state.clientChess = new Chess();
     dom.moveHistoryTbody.innerHTML = '';
     state.moveHistory.forEach(m => {
-      try { state.clientChess.move(m.san); } catch {}
+      try { state.clientChess.move(m.san); } catch { }
       addMoveToHistoryTable(m.ply, m.san);
     });
 
@@ -912,7 +912,7 @@ function renderBoard() {
 
 function handleSquareClick(squareName) {
   const isMyTurn = (state.currentTurn === 'w' && state.myColor === 'white') ||
-                   (state.currentTurn === 'b' && state.myColor === 'black');
+    (state.currentTurn === 'b' && state.myColor === 'black');
 
   if (!isMyTurn) {
     showError("It's not your turn!");
@@ -994,7 +994,7 @@ function submitAlgebraicMove() {
   if (!san) return;
 
   const isMyTurn = (state.currentTurn === 'w' && state.myColor === 'white') ||
-                   (state.currentTurn === 'b' && state.myColor === 'black');
+    (state.currentTurn === 'b' && state.myColor === 'black');
 
   if (!isMyTurn) {
     showError("It's not your turn!");
@@ -1085,7 +1085,7 @@ function populateBoardWithFen(fen) {
 function handleGameOver(data) {
   const { result, winner, fen, whiteRevealsUsed, blackRevealsUsed } = data;
   const isMeWinner = (winner === 'white' && state.myColor === 'white') ||
-                     (winner === 'black' && state.myColor === 'black');
+    (winner === 'black' && state.myColor === 'black');
 
   state.sound.playGameOver(isMeWinner);
   state.isGameOver = true;

@@ -887,10 +887,9 @@ html, body {
 
 /* Opponent Last Move Visual Banner */
 .last-move-banner {
-  position: absolute;
-  bottom: -40px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
+  margin-top: 6px;
+  align-self: center;
   background: rgba(212, 168, 83, 0.2);
   border: 1px solid var(--gold-primary);
   border-radius: var(--radius-full);

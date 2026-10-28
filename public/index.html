@@ -201,12 +201,6 @@
                 <span id="active-reveal-text">Tactical Reveal Active: Board visible to both players until move is played!</span>
               </div>
 
-              <!-- Opponent Last Move Visual Banner -->
-              <div id="last-move-banner" class="last-move-banner hidden">
-                <span class="blip-indicator-dot"></span>
-                <span id="last-move-desc">Opponent: e2 &rarr; e4 (e4)</span>
-              </div>
-
               <!-- 8x8 Board Container -->
               <div id="chess-board" class="chess-board">
                 <!-- 64 Squares injected by JavaScript -->
@@ -217,6 +211,12 @@
                 <span id="move-error-text">Illegal move!</span>
               </div>
 
+            </div>
+
+            <!-- Opponent Last Move Visual Banner (below board, in flow) -->
+            <div id="last-move-banner" class="last-move-banner hidden">
+              <span class="blip-indicator-dot"></span>
+              <span id="last-move-desc">Opponent: e2 &rarr; e4 (e4)</span>
             </div>
 
             <!-- Vision Legend for Blind Mode Dots -->
